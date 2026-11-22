@@ -1,0 +1,32 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: splitbill-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: adminpwd
+      MYSQL_DATABASE: split_bill
+#    ports:
+#      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-padminpwd"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    container_name: splitbill-app
+    ports:
+      - "4110:4110"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/split_bill
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: adminpwd
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
